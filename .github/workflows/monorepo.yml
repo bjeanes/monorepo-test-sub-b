@@ -44,7 +44,7 @@ jobs:
             OPTIONS=""
             [[ $IS_FORCED == "true" ]] && OPTIONS="$OPTIONS -f -o force"
 
-            git ls-remote mirror | grep "${GITHUB_REF}" &>/dev/null || OPTIONS="$OPTIONS -o base=${DEFAULT_BRANCH}"
+            git ls-remote mirror | grep "${GITHUB_REF}" &>/dev/null || OPTIONS="$OPTIONS -o merge -o base=${DEFAULT_BRANCH}"
             
             git push mirror HEAD:${BRANCH_NAME} ${OPTIONS}
           fi

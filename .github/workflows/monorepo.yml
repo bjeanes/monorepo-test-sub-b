@@ -43,7 +43,7 @@ jobs:
           
           if [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
             OPTIONS=""
-            [[ $IS_FORCED != "true" ]] && OPTIONS="$OPTIONS -f -o force"
+            [[ $IS_FORCED == "true" ]] && OPTIONS="$OPTIONS -f -o force"
 
             git ls-remote mirror | grep "${GITHUB_REF}" &>/dev/null || OPTIONS="$OPTIONS -o base=${DEFAULT_BRANCH}"
             

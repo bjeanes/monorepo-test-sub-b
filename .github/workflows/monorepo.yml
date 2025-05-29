@@ -22,29 +22,42 @@ jobs:
           set -ex
 
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          REMOTE_URL="${JOSH}/${MONOREPO}.git:/${SUBPATH}.git"
+          MONOREPO_URL=${JOSH}/${MONOREPO}.git
+          SUBSET_URL="${JOSH}/${MONOREPO}.git:/${SUBPATH}.git"
 
           echo "Listing origin:"
           git fetch origin
           git ls-remote origin
 
-          echo "Listing mirror:"
-          git remote add mirror "$REMOTE_URL"
-          git ls-remote mirror
+          echo "Listing monorepo:"
+          git remote add monorepo "$MONOREPO_URL"
+          git ls-remote monorepo
+
+          echo "Listing subset:"
+          git remote add subset "$SUBSET_URL"
+          git ls-remote subset
 
           # If there isn't a commit to checkout at the subpath of the monorepo we are pushing to,
           # then we want to instruct it to merge this tree into the monorepo with `-o merge`, but
           # we do not want to pass this option otherwise
-          OPTIONS="$(git ls-remote mirror | grep refs/heads/${DEFAULT_BRANCH} &>/dev/null || echo '-o merge')"
+          OPTIONS="$(git ls-remote subset | grep refs/heads/${DEFAULT_BRANCH} &>/dev/null || echo '-o merge')"
 
           # always push main branch
-          git push $OPTIONS mirror refs/remotes/origin/${DEFAULT_BRANCH}:${DEFAULT_BRANCH}
+          git push $OPTIONS subset refs/remotes/origin/${DEFAULT_BRANCH}:${DEFAULT_BRANCH}
           
           if [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
             OPTIONS=""
             [[ $IS_FORCED == "true" ]] && OPTIONS="$OPTIONS -f -o force"
 
-            git ls-remote mirror | grep "${GITHUB_REF}" &>/dev/null || OPTIONS="$OPTIONS -o merge -o base=${DEFAULT_BRANCH}"
+            if ! git ls-remote subset | grep "${GITHUB_REF}" &>/dev/null; then
+              if git ls-remote "${JOSH}/${MONOREPO}.git | grep "${GITHUB_REF}" &>/dev/null; then
+                  # Branch exists in monorepo but not in subset, so request this push to be merged
+                  OPTIONS="$OPTIONS -o merge"
+              else
+                  # creating a new branch in the upstream monorepo
+                  OPTIONS="$OPTIONS -o base=${DEFAULT_BRANCH}"
+              fi
+            fi
             
             git push mirror HEAD:${BRANCH_NAME} ${OPTIONS}
           fi

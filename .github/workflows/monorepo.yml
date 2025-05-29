@@ -24,7 +24,6 @@ jobs:
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           REMOTE_URL="${JOSH}/${MONOREPO}.git:/${SUBPATH}.git"
 
-
           echo "Listing origin:"
           git fetch origin
           git ls-remote origin

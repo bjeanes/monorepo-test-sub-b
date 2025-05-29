@@ -1,0 +1,42 @@
+on:
+  push:
+
+jobs:
+  push-to-monorepo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.TOKEN }}
+
+      - name: Push to monorepo
+        env:
+          JOSH: ${{ secrets.JOSH }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          MONOREPO: bjeanes/monorepo-test
+          SUBPATH: "sub-b"
+          IS_FORCED: ${{ github.event.forced }}
+        run: |
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          REMOTE_URL="${JOSH}/${MONOREPO}.git:/${SUBPATH}.git"
+
+          git remote add mirror "$REMOTE_URL"
+
+          git ls-remote origin
+          git ls-remote mirror
+
+          # If there isn't a commit to checkout at the subpath of the monorepo we are pushing to,
+          # then we want to instruct it to merge this tree into the monorepo with `-o merge`, but
+          # we do not want to pass this option otherwise
+          MAIN_OPTIONS="$(git fetch mirror ${DEFAULT_BRANCH} &>/dev/null || echo '-o merge')"
+
+          # always push main branch
+          git push $MAIN_OPTIONS mirror "origin/main:${DEFAULT_BRANCH}"
+          
+          if [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
+            [[ $IS_FORCED != "true" ]] && IS_FORCED=""
+            
+            git push ${IS_FORCED:+-f} mirror HEAD:${BRANCH_NAME} -o base=${DEFAULT_BRANCH} ${IS_FORCED:+-o force}
+          fi

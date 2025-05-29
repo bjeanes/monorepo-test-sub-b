@@ -50,7 +50,7 @@ jobs:
             [[ $IS_FORCED == "true" ]] && OPTIONS="$OPTIONS -f -o force"
 
             if ! git ls-remote subset | grep "${GITHUB_REF}" &>/dev/null; then
-              if git ls-remote "${JOSH}/${MONOREPO}.git | grep "${GITHUB_REF}" &>/dev/null; then
+              if git ls-remote "${JOSH}/${MONOREPO}.git" | grep "${GITHUB_REF}" &>/dev/null; then
                   # Branch exists in monorepo but not in subset, so request this push to be merged
                   OPTIONS="$OPTIONS -o merge"
               else

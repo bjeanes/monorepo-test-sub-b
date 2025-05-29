@@ -24,9 +24,13 @@ jobs:
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           REMOTE_URL="${JOSH}/${MONOREPO}.git:/${SUBPATH}.git"
 
-          git remote add mirror "$REMOTE_URL"
 
+          echo "Listing origin:"
+          git fetch origin
           git ls-remote origin
+
+          echo "Listing mirror:"
+          git remote add mirror "$REMOTE_URL"
           git ls-remote mirror
 
           # If there isn't a commit to checkout at the subpath of the monorepo we are pushing to,

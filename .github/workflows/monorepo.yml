@@ -39,7 +39,7 @@ jobs:
           OPTIONS="$(git ls-remote mirror | grep refs/heads/${DEFAULT_BRANCH} &>/dev/null || echo '-o merge')"
 
           # always push main branch
-          git push $OPTIONS mirror ${DEFAULT_BRANCH}
+          git push $OPTIONS mirror refs/remotes/origin/${DEFAULT_BRANCH}:${DEFAULT_BRANCH}
           
           if [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
             OPTIONS=""

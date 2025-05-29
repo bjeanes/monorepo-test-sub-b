@@ -32,13 +32,16 @@ jobs:
           # If there isn't a commit to checkout at the subpath of the monorepo we are pushing to,
           # then we want to instruct it to merge this tree into the monorepo with `-o merge`, but
           # we do not want to pass this option otherwise
-          MAIN_OPTIONS="$(git fetch mirror ${DEFAULT_BRANCH} &>/dev/null || echo '-o merge')"
+          OPTIONS="$(git ls-remote mirror | grep refs/heads/${DEFAULT_BRANCH} &>/dev/null || echo '-o merge')"
 
           # always push main branch
-          git push $MAIN_OPTIONS mirror ${DEFAULT_BRANCH}
+          git push $OPTIONS mirror ${DEFAULT_BRANCH}
           
           if [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
-            [[ $IS_FORCED != "true" ]] && IS_FORCED=""
+            OPTIONS=""
+            [[ $IS_FORCED != "true" ]] && OPTIONS="$OPTIONS -f -o force"
+
+            git ls-remote mirror | grep "${GITHUB_REF}" &>/dev/null || OPTIONS="$OPTIONS -o base=${DEFAULT_BRANCH}"
             
-            git push ${IS_FORCED:+-f} mirror HEAD:${BRANCH_NAME} -o base=${DEFAULT_BRANCH} ${IS_FORCED:+-o force}
+            git push mirror HEAD:${BRANCH_NAME} ${OPTIONS}
           fi

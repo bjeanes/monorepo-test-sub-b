@@ -35,7 +35,7 @@ jobs:
           MAIN_OPTIONS="$(git fetch mirror ${DEFAULT_BRANCH} &>/dev/null || echo '-o merge')"
 
           # always push main branch
-          git push $MAIN_OPTIONS mirror "origin/main:${DEFAULT_BRANCH}"
+          git push $MAIN_OPTIONS mirror "refs/heads/main:${DEFAULT_BRANCH}"
           
           if [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
             [[ $IS_FORCED != "true" ]] && IS_FORCED=""
